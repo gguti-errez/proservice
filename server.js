@@ -464,6 +464,9 @@ const server = http.createServer(async (req, res) => {
       return res.end(buf);
     }
 
+    /* Control de horas extras: el técnico solo ve lo suyo; el administrador ve y autoriza todo (reglas en he.js) */
+    if (p.startsWith('/api/he/')) return require('./he').handle(req, res, url, U, { send, jsonBody, col, saveSoon, refresh, users: () => DB.users });
+
     /* respaldo completo (solo master, sin claves) */
     if (p === '/api/export' && req.method === 'GET') {
       if (U.role !== 'master') return send(res, 403, { error: 'Solo el master puede exportar.' });
