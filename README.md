@@ -27,7 +27,7 @@ Se ve desde cualquier dispositivo (computadora, tablet, celular) con solo abrir 
 - Todos los cambios aparecen al instante en todas las pantallas abiertas.
 
 ## Control de horas extras (`he.js` + `public/horas-extras.html`)
-Página: `/horas-extras.html` (enlázala desde el menú del plan de mttos solo para colaboradores y administradores).
+Página: `/horas-extras.html` (ya tiene su pestaña “Horas extras” en el menú del plan de mttos, visible solo para colaboradores y administradores; el cliente no la ve).
 - **Técnico (colaborador):** registra sus horas (fecha, inicio, fin, tipo de observación y detalle) y ve **únicamente las suyas**. Edita o elimina mientras estén *Pendientes* o *Devueltas*; un registro *Autorizado* solo lo reabre un administrador.
 - **Administrador:** ve todo, autoriza (uno por uno o en lote), devuelve con motivo, reabre, consulta el **resumen del período** (del 15 al 14), el **calendario** por colaborador y exporta a **Excel**. También agrega feriados.
 - **Cliente:** sin acceso (403).
