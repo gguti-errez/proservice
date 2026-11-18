@@ -1,6 +1,6 @@
 FROM node:22-alpine
 WORKDIR /app
-COPY package.json server.js reports.js seed-corinsa.json ./
+COPY package.json server.js reports.js store.js he.js he-form.js he-form-tpl.js seed-corinsa.json ./
 COPY public ./public
 ENV NODE_ENV=production PORT=3000 DATA_DIR=/data
 RUN mkdir -p /data && chown node:node /data

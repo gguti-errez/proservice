@@ -1,6 +1,6 @@
 'use strict';
 /*
- * Plataforma de Mantenimientos (multicliente) — servidor
+ * Plan de mttos PBS (multicliente) — servidor
  * Sin dependencias externas. Requiere Node.js 18 o superior.
  *   - Sirve la página (carpeta /public)
  *   - Guarda los datos en un archivo JSON (DATA_DIR/data.json)
@@ -13,6 +13,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const store = require('./store');
 
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -40,9 +41,11 @@ function saveNow() {
   const tmp = DATA_FILE + '.tmp';
   fs.writeFileSync(tmp, JSON.stringify(DB));
   fs.renameSync(tmp, DATA_FILE);
+  store.schedule();
 }
-process.on('SIGTERM', () => { saveNow(); process.exit(0); });
-process.on('SIGINT', () => { saveNow(); process.exit(0); });
+const bye = async () => { try { saveNow(); await store.flushNow(8000); } catch (e) { /* nada */ } process.exit(0); };
+process.on('SIGTERM', bye);
+process.on('SIGINT', bye);
 const col = (n) => (DB.cols[n] = DB.cols[n] || {});
 const ID_OK = /^[A-Za-z0-9_.:~@+-]{1,120}$/;
 const SLUG_OK = /^[a-z0-9]{2,12}$/;
@@ -62,7 +65,7 @@ const checkPw = (u, pw) => {
 const pub = (u) => ({ id: u.id, user: u.user, name: u.name, role: u.role, client: u.client, active: u.active, cargo: u.cargo || '', tel: u.tel || '', email: u.email || '', color: u.color || '' });
 const masterUser = () => Object.values(DB.users).find((u) => u.role === 'master');
 const otherAdmin = (id) => Object.values(DB.users).some((u) => u.role === 'master' && u.active && u.id !== id);
-(function bootstrap() {
+function bootstrap() {
   if (!Object.keys(col('clientes')).length) col('clientes').corinsa = { n: 'CORINSA', freq: 6, active: true };
   const m = Object.values(DB.users).find((u) => u.role === 'master' && u.user === MASTER_USER) || masterUser();
   const pw = process.env.APP_PASSWORD;
@@ -79,7 +82,7 @@ const otherAdmin = (id) => Object.values(DB.users).some((u) => u.role === 'maste
     setPassword(m, pw); m.active = true; saveNow();
     console.log('Clave del master restablecida con APP_PASSWORD. Quita RESET_MASTER para no repetirlo.');
   } else saveNow();
-})();
+}
 
 /* ---------- sesión: cookie firmada, vence por inactividad ---------- */
 function sign(payload) {
@@ -206,7 +209,7 @@ setInterval(() => {
 }, 25000);
 
 /* ---------- utilidades HTTP ---------- */
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.png': 'image/png', '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', '.ico': 'image/x-icon', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml' };
 function send(res, code, obj, headers) {
   res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...headers });
   res.end(JSON.stringify(obj));
@@ -237,7 +240,7 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x');
     const p = url.pathname;
     for (const [k, v] of Object.entries(SEC)) res.setHeader(k, v);
-    if (p === '/healthz') return send(res, 200, { ok: true });
+    if (p === '/healthz') { store.touch(); return send(res, 200, { ok: true, almacenamiento: store.enabled ? 'supabase' : 'archivo' }); }
 
     /* configuración inicial: definir la clave de la cuenta admin (solo mientras no exista) */
     if (p === '/api/setup' && req.method === 'GET') return send(res, 200, { needed: !masterUser(), code: !!SETUP_CODE, user: MASTER_USER });
@@ -418,12 +421,20 @@ const server = http.createServer(async (req, res) => {
       if (!isPdf && !isJpg) return send(res, 415, { error: 'Solo se permiten PDF o JPG.' });
       const id = (cl === 'corinsa' ? '' : cl + '_') + crypto.randomBytes(16).toString('hex') + (isPdf ? '.pdf' : '.jpg');
       fs.writeFileSync(path.join(UPLOAD_DIR, id), buf);
+      if (store.enabled) {
+        try { await store.putObject(id, buf, isPdf ? 'application/pdf' : 'image/jpeg'); }
+        catch (e) { console.error('Storage: ' + e.message); try { fs.unlinkSync(path.join(UPLOAD_DIR, id)); } catch (_) { /* nada */ } return send(res, 502, { error: 'No se pudo guardar la evidencia en el almacenamiento. Intenta de nuevo.' }); }
+      }
       return send(res, 200, { id, url: '/uploads/' + id }, refresh);
     }
     if ((m = p.match(/^\/uploads\/(?:([a-z0-9]{2,12})_)?([a-f0-9]{32})\.(pdf|jpg)$/)) && req.method === 'GET') {
       const owner = m[1] || 'corinsa';
       if (U.role === 'user' && U.client !== owner) return send(res, 404, { error: 'No existe' });
       const f = path.join(UPLOAD_DIR, path.basename(p));
+      if (!fs.existsSync(f) && store.enabled) {
+        let b = null; try { b = await store.getObject(path.basename(p)); } catch (e) { console.error('Storage: ' + e.message); }
+        if (b) { try { fs.writeFileSync(f, b); } catch (_) { /* sin caché local */ } }
+      }
       if (!fs.existsSync(f)) return send(res, 404, { error: 'No existe' });
       res.writeHead(200, { 'Content-Type': m[3] === 'pdf' ? 'application/pdf' : 'image/jpeg', 'Content-Disposition': 'inline', 'Cache-Control': 'private, no-store', ...refresh });
       return fs.createReadStream(f).pipe(res);
@@ -434,6 +445,11 @@ const server = http.createServer(async (req, res) => {
       if (!canRead(U, 'equipos')) return send(res, 404, { error: 'No existe' });
       try { return send(res, 200, JSON.parse(fs.readFileSync(path.join(__dirname, 'seed-corinsa.json'), 'utf8')), refresh); }
       catch (e) { return send(res, 200, [], refresh); }
+    }
+
+    if (p === '/api/storage' && req.method === 'GET') {
+      if (U.role !== 'master') return send(res, 403, { error: 'Solo los administradores.' });
+      return send(res, 200, store.status(), refresh);
     }
 
     /* Panel gerencial: métricas y exportación (solo administradores) */
@@ -447,6 +463,9 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Content-Disposition': `attachment; filename="panel-gerencial-${stamp.slice(0, 10)}.xlsx"`, 'Cache-Control': 'no-store', ...refresh });
       return res.end(buf);
     }
+
+    /* Control de horas extras: el técnico solo ve lo suyo; el administrador ve y autoriza todo (reglas en he.js) */
+    if (p.startsWith('/api/he/')) return require('./he').handle(req, res, url, U, { send, jsonBody, col, saveSoon, refresh, users: () => DB.users });
 
     /* respaldo completo (solo master, sin claves) */
     if (p === '/api/export' && req.method === 'GET') {
@@ -471,4 +490,11 @@ const server = http.createServer(async (req, res) => {
     else res.end();
   }
 });
-server.listen(PORT, () => console.log(`Plataforma de Mantenimientos escuchando en http://localhost:${PORT}  (datos en ${DATA_DIR})`));
+(async () => {
+  if (store.enabled) {
+    const n = await store.loadRetry(DB);
+    console.log(n ? `Supabase: ${n} registros cargados.` : 'Supabase: base vacía; se subirán los datos locales (si existen).');
+  } else console.log('Supabase no configurado: los datos se guardan solo en archivos locales (en Render gratis se pierden al reiniciar).');
+  bootstrap();
+  server.listen(PORT, () => console.log(`Plan de mttos PBS escuchando en http://localhost:${PORT}  (datos en ${DATA_DIR})`));
+})().catch((e) => { console.error('No se pudo iniciar: ' + e.message); process.exit(1); });

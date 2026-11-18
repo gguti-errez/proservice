@@ -163,7 +163,7 @@ function workbook(rep, emitido, por) {
   const f = rep.filtro, g = rep.global;
   const cliN = f.c === 'all' ? 'Todos los clientes' : ((rep.lista.find((x) => x.c === f.c) || {}).n || f.c);
   const resumen = [
-    [{ v: 'Panel gerencial · mttos.pbs', st: 3 }], [],
+    [{ v: 'Panel gerencial · Plan de mttos PBS', st: 3 }], [],
     ['Cliente', cliN], ['Desde', f.from || 'Inicio'], ['Hasta', f.to || 'Hoy'], ['Emitido', emitido], ['Emitido por', por], [],
     hd(['Indicador', 'Valor']),
     ['Equipos', g.total], ['Listos', g.listos], ['En espera de repuesto', g.espera], ['Pendientes', g.pendientes], ['Avance %', g.avance],
@@ -190,4 +190,4 @@ function workbook(rep, emitido, por) {
     { name: 'Detalle', rows: det, widths: [22, 8, 44, 22, 30, 18, 12, 12, 22, 9, 9, 9] }
   ]);
 }
-module.exports = { report, workbook };
+module.exports = { report, workbook, xlsx, hd, d2, zip };

@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Horas extras · Plan de mttos PBS</title>
+<style>
+:root{--azul:#0B3C7D;--azul2:#1F5FB0;--bg:#f3f5f9;--card:#fff;--tx:#1b2433;--mut:#5f6b7e;--bd:#d9dfea;
+--ok:#1e7a46;--okbg:#e3f4ea;--pen:#8a6100;--penbg:#fff3d1;--dev:#a12626;--devbg:#fde4e4;
+--d:#f2c94c;--n:#4a7fd0;--x:#e07b39}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--tx)}
+header{background:var(--azul);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+header h1{font-size:18px;margin:0;flex:1 1 auto}
+header .who{font-size:13px;opacity:.9}
+header a,header button{color:#fff;background:rgba(255,255,255,.14);border:0;border-radius:8px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer;text-decoration:none}
+header a:hover,header button:hover{background:rgba(255,255,255,.25)}
+main{max-width:1180px;margin:0 auto;padding:14px 12px 60px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:0 0 14px}
+.card h2{font-size:16px;margin:0 0 10px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:4px;flex:1 1 140px;min-width:120px}
+.f.w{flex:2 1 260px}
+label{font-size:12px;color:var(--mut);font-weight:600}
+input,select,textarea{font:inherit;padding:9px 10px;border:1px solid var(--bd);border-radius:8px;background:#fff;color:var(--tx);width:100%}
+textarea{min-height:60px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--azul2);outline-offset:0}
+button.b{background:var(--azul);color:#fff;border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
+button.b:hover{background:var(--azul2)} button.b:disabled{opacity:.5;cursor:default}
+button.g{background:#fff;color:var(--azul);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer}
+button.g:hover{background:#eef3fb}
+button.s{padding:5px 9px;font-size:13px}
+button.red{color:var(--dev)} button.grn{color:var(--ok);border-color:#b8dcc7}
+.prev{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;align-items:center}
+.chip{display:inline-flex;gap:6px;align-items:center;padding:3px 9px;border-radius:99px;font-size:13px;background:#eef1f7;white-space:nowrap}
+.chip i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.d i{background:var(--d)} .n i{background:var(--n)} .x i{background:var(--x)}
+.msg{margin:8px 0 0;padding:8px 10px;border-radius:8px;font-size:13px}
+.msg.w{background:var(--penbg);color:var(--pen)} .msg.e{background:var(--devbg);color:var(--dev)} .msg.i{background:#e8f0fb;color:var(--azul)} .msg.o{background:var(--okbg);color:var(--ok)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 12px}
+.tile{background:#f7f9fd;border:1px solid var(--bd);border-radius:10px;padding:10px}
+.tile b{display:block;font-size:22px} .tile span{font-size:12px;color:var(--mut)}
+.tile small{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.bar .sp{flex:1}
+.per{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.per select,.per input{width:auto}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 12px;border-bottom:2px solid var(--bd)}
+.tabs button{background:none;border:0;padding:9px 14px;font:inherit;cursor:pointer;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--azul);border-bottom-color:var(--azul);font-weight:700}
+.tabs .cnt{background:var(--dev);color:#fff;border-radius:99px;font-size:11px;padding:1px 7px;margin-left:5px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}
+th{background:#f1f4fa;font-size:12px;color:var(--mut);position:sticky;top:0}
+td.num,th.num{text-align:right;white-space:nowrap}
+tr.tot td{font-weight:700;background:#f1f4fa}
+.scroll{overflow:auto;max-height:70vh;border:1px solid var(--bd);border-radius:10px}
+.scroll table{border:0}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:700}
+.badge.P{background:var(--penbg);color:var(--pen)} .badge.A{background:var(--okbg);color:var(--ok)} .badge.D{background:var(--devbg);color:var(--dev)}
+.late{font-size:12px;color:var(--dev);font-weight:600}
+.item{border:1px solid var(--bd);border-radius:10px;padding:10px;margin:0 0 8px;background:#fff}
+.item .top{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.item .top b{font-size:15px}
+.item .obs{margin:6px 0 0;color:var(--tx);word-break:break-word}
+.item .nota{margin:6px 0 0;padding:6px 9px;background:var(--devbg);color:var(--dev);border-radius:8px;font-size:13px}
+.item .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.item .meta{font-size:12px;color:var(--mut);margin-top:4px}
+.empty{color:var(--mut);padding:16px;text-align:center}
+.hint{font-size:13px;color:var(--mut)} .hint.w{color:var(--pen)}
+.cal td,.cal th{padding:3px 2px;text-align:center;min-width:30px;font-size:12px;border:1px solid #e7ebf3}
+.cal td.nm,.cal th.nm{text-align:left;min-width:150px;position:sticky;left:0;background:#fff;z-index:1;font-size:13px;padding:5px 8px}
+.cal th.nm{background:#f1f4fa}
+.cal th.hol{background:#c0392b;color:#fff}
+.cal td.c{font-weight:700;color:#1b2433}
+.cal td.p{opacity:.55;border-style:dashed}
+.leg{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:0 0 8px;align-items:center}
+dialog{border:0;border-radius:12px;padding:18px;max-width:440px;width:92vw;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(10,20,40,.45)}
+dialog h3{margin:0 0 10px;font-size:16px}
+dialog .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.login{max-width:420px;margin:50px auto;text-align:center}
+.hide{display:none!important}
+.sel{width:18px;height:18px}
+.chk{width:30px}
+@media (max-width:640px){main{padding:10px 8px 60px}.card{padding:11px}.tabs button{padding:8px 10px;font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Control de horas extras</h1>
+  <span class="who" id="who"></span>
+  <a href="/">← Plan de mttos</a>
+  <button id="salir" class="hide">Cerrar sesión</button>
+</header>
+<main id="app"><div class="empty">Cargando…</div></main>
+
+<dialog id="dlg"><h3 id="dlgT"></h3><div id="dlgB"></div><div class="acts"><button class="g" id="dlgNo">Cancelar</button><button class="b" id="dlgOk">Aceptar</button></div></dialog>
+
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DS = ['dom','lun','mar','mié','jue','vie','sáb'], DL = ['D','L','M','X','J','V','S'];
+const num = (n) => String(Math.round((+n || 0) * 100) / 100);
+const dow = (d) => new Date(d + 'T00:00:00Z').getUTCDay();
+const fdate = (d) => `${DS[dow(d)]} ${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}`;
+const fshort = (d) => `${d.slice(8, 10)}/${d.slice(5, 7)}`;
+const periodOf = (y, m) => ({ ini: new Date(Date.UTC(y, m - 2, 15)).toISOString().slice(0, 10), fin: new Date(Date.UTC(y, m - 1, 14)).toISOString().slice(0, 10) });
+const addDays = (d, n) => { const t = new Date(d + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+const ST = { P: 'Pendiente', A: 'Autorizado', D: 'Devuelto' };
+
+const S = { cfg: null, y: 0, m: 0, tab: 'aut', regs: [], res: null, edit: null, cal: { pend: true }, fer: null, filtroU: '', filtroS: '' };
+const fmtHoliday = new Map();
+
+async function api(path, opt = {}) {
+  const r = await fetch(path, { credentials: 'same-origin', ...opt, headers: { 'Content-Type': 'application/json', ...(opt.headers || {}) }, body: opt.body && typeof opt.body !== 'string' ? JSON.stringify(opt.body) : opt.body });
+  if (r.status === 401) { showLogin(); throw new Error('Sesión vencida'); }
+  let d = null; try { d = await r.json(); } catch (e) { /* sin cuerpo */ }
+  if (!r.ok) throw new Error((d && d.error) || 'Error ' + r.status);
+  return d;
+}
+function showLogin() {
+  $('#who').textContent = ''; $('#salir').classList.add('hide');
+  $('#app').innerHTML = '<div class="card login"><h2>Inicia sesión</h2><p>Para usar el control de horas extras entra primero con tu usuario en el plan de mttos y vuelve a esta página.</p><p><a class="b" style="display:inline-block;text-decoration:none;padding:10px 16px;border-radius:8px;background:var(--azul);color:#fff" href="/">Ir a iniciar sesión</a></p></div>';
+}
+function dialog(title, bodyHtml, okText) {
+  return new Promise((res) => {
+    const d = $('#dlg'); $('#dlgT').textContent = title; $('#dlgB').innerHTML = bodyHtml; $('#dlgOk').textContent = okText || 'Aceptar';
+    const done = (v) => { d.close(); res(v); };
+    $('#dlgOk').onclick = () => done(true); $('#dlgNo').onclick = () => done(false); d.oncancel = () => res(false);
+    d.showModal(); const i = d.querySelector('input,textarea'); if (i) i.focus();
+  });
+}
+const toast = (t, ok = true) => { const e = document.createElement('div'); e.className = 'msg ' + (ok ? 'o' : 'e'); e.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:9;box-shadow:0 4px 18px rgba(0,0,0,.25);max-width:92vw'; e.textContent = t; document.body.appendChild(e); setTimeout(() => e.remove(), 3500); };
+
+/* ---------- arranque ---------- */
+async function init() {
+  try { S.cfg = await api('/api/he/config'); }
+  catch (e) { if (e.message !== 'Sesión vencida') $('#app').innerHTML = `<div class="card"><div class="msg e">${esc(e.message)}</div><p><a href="/">← Volver al plan de mttos</a></p></div>`; return; }
+  S.y = S.cfg.periodo.y; S.m = S.cfg.periodo.m; S.tab = S.cfg.me.role === 'master' ? 'aut' : 'mis';
+  S.cfg.feriados.forEach((f) => fmtHoliday.set(f.f, f.n));
+  $('#who').textContent = S.cfg.me.name + (S.cfg.me.role === 'master' ? ' · Administrador' : ' · Técnico');
+  $('#salir').classList.remove('hide');
+  $('#salir').onclick = async () => { try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch (e) { /* nada */ } location.href = '/'; };
+  S.cfg.me.role === 'master' ? await adminRender() : await tecRender();
+}
+function perSel() {
+  const ys = []; const cy = new Date().getFullYear(); for (let y = cy + 1; y >= 2024; y--) ys.push(y);
+  const p = periodOf(S.y, S.m);
+  return `<div class="per"><label for="pm">Período que cierra en</label>
+    <select id="pm">${MESES.map((n, i) => `<option value="${i + 1}"${i + 1 === S.m ? ' selected' : ''}>${n}</option>`).join('')}</select>
+    <select id="py">${ys.map((y) => `<option${y === S.y ? ' selected' : ''}>${y}</option>`).join('')}</select>
+    <span class="chip">${fdate(p.ini)} al ${fdate(p.fin)}</span></div>`;
+}
+function bindPer(fn) { $('#pm').onchange = () => { S.m = +$('#pm').value; fn(); }; $('#py').onchange = () => { S.y = +$('#py').value; fn(); }; }
+const chips = (h) => `<span class="chip d"><i></i>Diurnas ${num(h.d)} h</span><span class="chip n"><i></i>Nocturnas ${num(h.n)} h</span><span class="chip x"><i></i>Dobles ${num(h.x)} h</span><b>${num(h.t)} h</b>`;
+const holName = (d) => fmtHoliday.get(d);
+
+/* ---------- reporte oficial (formato de Recursos Humanos) ---------- */
+async function bajar(url) {
+  try {
+    const r = await fetch(url, { credentials: 'same-origin' });
+    if (r.status === 401) { showLogin(); return; }
+    if (!r.ok) { let m = 'No se pudo generar el reporte.'; try { m = (await r.json()).error || m; } catch (e) { /* sin cuerpo */ } toast(m, false); return; }
+    const blob = await r.blob(), cd = r.headers.get('Content-Disposition') || '', mm = cd.match(/filename="([^"]+)"/);
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = mm ? mm[1] : 'Reporte-Horas-Extras.xlsx';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch (e) { toast('No se pudo descargar el reporte.', false); }
+}
+const closed = (p) => p.fin < S.cfg.hoy;
+function repBoxT(p) {
+  const nA = S.regs.filter((r) => r.s === 'A').length, nO = S.regs.filter((r) => r.s !== 'A').length;
+  let hint, warn = false;
+  if (!closed(p)) hint = `El reporte se habilita al cerrar el período, a partir del ${fdate(addDays(p.fin, 1))}.`;
+  else if (!nA) hint = 'No tienes horas autorizadas en este período.';
+  else { hint = 'Incluye solo las horas autorizadas.'; if (nO) { hint += ` Tienes ${nO} registro(s) pendiente(s) o devuelto(s) que no aparecerán.`; warn = true; } }
+  return `<div class="bar" style="margin-top:2px"><button class="b" id="repT" ${closed(p) && nA ? '' : 'disabled'}>Descargar reporte (Excel)</button><span class="hint${warn ? ' w' : ''}">${esc(hint)}</span></div>`;
+}
+
+/* =============== TÉCNICO =============== */
+async function tecRender() {
+  const p = periodOf(S.y, S.m);
+  S.regs = await api(`/api/he/reg?from=${p.ini}&to=${p.fin}`);
+  const sum = { A: { d: 0, n: 0, x: 0, t: 0 }, P: { d: 0, n: 0, x: 0, t: 0 } };
+  S.regs.forEach((r) => { if (r.s === 'D') return; const a = sum[r.s]; a.d += r.h.d; a.n += r.h.n; a.x += r.h.x; a.t += r.h.t; });
+  const e = S.edit;
+  $('#app').innerHTML = `
+  <div class="card"><h2>${e ? 'Editar registro' : 'Registrar horas extras'}</h2>
+    <div class="row">
+      <div class="f"><label for="f">Fecha en que inició</label><input type="date" id="f" max="${S.cfg.hoy}" value="${e ? e.f : S.cfg.hoy}"></div>
+      <div class="f"><label for="hi">Hora de inicio</label><input type="time" id="hi" value="${e ? e.hi : ''}"></div>
+      <div class="f"><label for="hf">Hora de fin</label><input type="time" id="hf" value="${e ? e.hf : ''}"></div>
+      <div class="f w"><label for="t">Tipo de observación</label><select id="t"><option value="">Elige…</option>${S.cfg.tipos.map((t) => `<option${e && e.t === t ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select></div>
+      <div class="f"><label for="v">Horas de viaje (opcional)</label><input type="number" id="v" min="0" max="16" step="0.25" inputmode="decimal" placeholder="0" value="${e && e.v ? e.v : ''}"></div>
+    </div>
+    <div class="row" style="margin-top:10px"><div class="f w"><label for="o">Observación adicional <span id="oreq" style="color:var(--dev)"></span></label><textarea id="o" maxlength="300" placeholder="Cliente, equipo o detalle del trabajo">${esc(e ? e.o : '')}</textarea></div></div>
+    <div id="prev"></div>
+    <div id="fmsg"></div>
+    <div class="row" style="margin-top:12px"><button class="b" id="guardar">${e ? 'Guardar cambios' : 'Guardar registro'}</button>${e ? '<button class="g" id="cancel">Cancelar</button>' : ''}</div>
+    <p style="font-size:12px;color:var(--mut);margin:10px 0 0">Si el trabajo pasa de la medianoche, escribe la hora de fin del día siguiente (por ejemplo 22:00 a 02:00). Diurna: 5:00 a. m. a 7:00 p. m. Domingos y feriados cuentan como dobles. Se reporta el mismo día o a más tardar al día siguiente.</p>
+  </div>
+  <div class="card"><div class="bar"><h2 style="margin:0">Mis horas</h2><span class="sp"></span>${perSel()}</div>
+    <div class="tiles">
+      <div class="tile"><span>Autorizadas</span><b>${num(sum.A.t)} h</b><small>${num(sum.A.d)} diurnas · ${num(sum.A.n)} nocturnas · ${num(sum.A.x)} dobles</small></div>
+      <div class="tile"><span>Pendientes de autorizar</span><b>${num(sum.P.t)} h</b><small>${num(sum.P.d)} diurnas · ${num(sum.P.n)} nocturnas · ${num(sum.P.x)} dobles</small></div>
+    </div>
+    ${repBoxT(p)}
+    <div id="lista">${S.regs.length ? S.regs.map((r) => itemHtml(r, false)).join('') : '<div class="empty">No tienes registros en este período.</div>'}</div>
+  </div>`;
+  bindPer(tecRender);
+  ['f', 'hi', 'hf', 't', 'o'].forEach((id) => $('#' + id).addEventListener('input', preview));
+  $('#guardar').onclick = guardar;
+  if (e) $('#cancel').onclick = () => { S.edit = null; tecRender(); };
+  $('#lista').onclick = tecActions;
+  if ($('#repT')) $('#repT').onclick = () => bajar(`/api/he/reporte.xlsx?y=${S.y}&m=${S.m}`);
+  preview();
+}
+function itemHtml(r, admin) {
+  const hol = holName(r.f) ? ` · ${esc(holName(r.f))}` : '';
+  const acts = admin
+    ? (r.s === 'P' || r.s === 'D' ? `<button class="g s grn" data-a="aut" data-id="${r.id}">Autorizar</button><button class="g s red" data-a="dev" data-id="${r.id}">Devolver</button>` : `<button class="g s" data-a="abrir" data-id="${r.id}">Reabrir</button>`) + `<button class="g s red" data-a="del" data-id="${r.id}">Eliminar</button>`
+    : (r.s !== 'A' ? `<button class="g s" data-a="edit" data-id="${r.id}">Editar</button><button class="g s red" data-a="del" data-id="${r.id}">Eliminar</button>` : '');
+  return `<div class="item"><div class="top"><b>${fdate(r.f)}${hol}</b><span>${r.hi} – ${r.hf}</span>${admin ? `<span class="chip">${esc(r.un)}</span>` : ''}<span class="badge ${r.s}">${ST[r.s]}</span>${r.tarde ? '<span class="late">Fuera de plazo</span>' : ''}</div>
+  <div class="prev" style="margin:6px 0 0">${chips(r.h)}</div>
+  <div class="obs"><b>${esc(r.t)}</b>${r.o ? ' · ' + esc(r.o) : ''}${r.v > 0 ? ' · Viaje ' + num(r.v) + ' h' : ''}</div>
+  ${r.s === 'D' && r.nota ? `<div class="nota">Devuelto: ${esc(r.nota)}</div>` : ''}
+  ${r.s === 'A' ? `<div class="meta">Autorizado por ${esc(r.aby)}${r.aat ? ' el ' + new Date(r.aat).toLocaleString('es-HN', { timeZone: 'America/Tegucigalpa', dateStyle: 'short', timeStyle: 'short' }) : ''}</div>` : ''}
+  ${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
+}
+let pvTimer = 0;
+function preview() {
+  const t = $('#t').value; $('#oreq').textContent = t === 'Otros' ? '(obligatoria en “Otros”)' : '';
+  clearTimeout(pvTimer);
+  pvTimer = setTimeout(async () => {
+    const f = $('#f').value, hi = $('#hi').value, hf = $('#hf').value, box = $('#prev'); if (!box) return;
+    if (!f || !hi || !hf) { box.innerHTML = ''; return; }
+    try {
+      const d = await api(`/api/he/calc?f=${encodeURIComponent(f)}&hi=${encodeURIComponent(hi)}&hf=${encodeURIComponent(hf)}${S.edit ? '&id=' + S.edit.id : ''}`);
+      if (d.error) { box.innerHTML = `<div class="msg e">${esc(d.error)}</div>`; return; }
+      const cross = hf <= hi;
+      box.innerHTML = `<div class="prev">${chips(d.h)}</div>` +
+        (cross ? '<div class="msg i">Cruza la medianoche: las horas se dividen por día.</div>' : '') +
+        (d.dobles.length ? `<div class="msg i">Incluye domingo o feriado (${d.dobles.join(' y ')}): esas horas cuentan como dobles.</div>` : '') +
+        (d.tarde ? '<div class="msg w">Fuera de plazo: las horas extras se reportan el mismo día o a más tardar al día siguiente. Se guardará marcado como fuera de plazo.</div>' : '') +
+        (d.solapa ? '<div class="msg w">Este horario parece cruzarse con otro registro tuyo.</div>' : '');
+    } catch (e) { /* sesión vencida u otro: lo maneja api() */ }
+  }, 250);
+}
+async function guardar() {
+  const body = { f: $('#f').value, hi: $('#hi').value, hf: $('#hf').value, t: $('#t').value, o: $('#o').value, v: $('#v').value };
+  const btn = $('#guardar'); btn.disabled = true; $('#fmsg').innerHTML = '';
+  try {
+    if (S.edit) await api('/api/he/reg/' + S.edit.id, { method: 'PUT', body }); else await api('/api/he/reg', { method: 'POST', body });
+    toast(S.edit ? 'Cambios guardados' : 'Registro guardado'); S.edit = null;
+    const fm = body.f, my = +fm.slice(0, 4), mm = +fm.slice(5, 7), dd = +fm.slice(8, 10); // mostrar el período del registro
+    if (dd >= 15) { S.y = mm === 12 ? my + 1 : my; S.m = mm === 12 ? 1 : mm + 1; } else { S.y = my; S.m = mm; }
+    await tecRender();
+  } catch (e) { btn.disabled = false; $('#fmsg').innerHTML = `<div class="msg e">${esc(e.message)}</div>`; }
+}
+async function tecActions(ev) {
+  const b = ev.target.closest('button[data-a]'); if (!b) return;
+  const r = S.regs.find((x) => x.id === b.dataset.id); if (!r) return;
+  if (b.dataset.a === 'edit') { S.edit = r; await tecRender(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  if (b.dataset.a === 'del') {
+    if (!(await dialog('Eliminar registro', `<p>¿Eliminar el registro del ${fdate(r.f)} (${r.hi} – ${r.hf})?</p>`, 'Eliminar'))) return;
+    try { await api('/api/he/reg/' + r.id, { method: 'DELETE' }); toast('Registro eliminado'); await tecRender(); } catch (e) { toast(e.message, false); }
+  }
+}
+
+/* =============== ADMINISTRADOR =============== */
+async function adminRender() {
+  const pend = await api('/api/he/reg?s=P');
+  S.pend = pend;
+  $('#app').innerHTML = `<div class="tabs" id="tabs">
+    <button data-t="aut">Por autorizar${pend.length ? `<span class="cnt">${pend.length}</span>` : ''}</button>
+    <button data-t="res">Resumen del período</button><button data-t="cal">Calendario</button>
+    <button data-t="reg">Todos los registros</button><button data-t="fer">Feriados</button><button data-t="emp">Empleados</button></div><div id="pane"></div>`;
+  $('#tabs').onclick = (e) => { const b = e.target.closest('button[data-t]'); if (b) { S.tab = b.dataset.t; adminTab(); } };
+  adminTab();
+}
+function markTab() { document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.t === S.tab)); }
+async function adminTab() {
+  markTab(); const pane = $('#pane'); pane.innerHTML = '<div class="empty">Cargando…</div>';
+  try {
+    if (S.tab === 'aut') return await tabAut(pane);
+    if (S.tab === 'res') return await tabRes(pane);
+    if (S.tab === 'cal') return await tabCal(pane);
+    if (S.tab === 'reg') return await tabReg(pane);
+    if (S.tab === 'fer') return tabFer(pane);
+    if (S.tab === 'emp') return await tabEmp(pane);
+  } catch (e) { if (e.message !== 'Sesión vencida') pane.innerHTML = `<div class="msg e">${esc(e.message)}</div>`; }
+}
+async function estado(id, accion, nota) { return api(`/api/he/reg/${id}/estado`, { method: 'POST', body: { accion, nota } }); }
+async function adminAction(ev, reload) {
+  const b = ev.target.closest('button[data-a]'); if (!b) return;
+  const id = b.dataset.id, a = b.dataset.a;
+  try {
+    if (a === 'aut') { await estado(id, 'aut'); toast('Autorizado'); }
+    else if (a === 'abrir') { if (!(await dialog('Reabrir registro', '<p>El registro volverá a Pendiente.</p>', 'Reabrir'))) return; await estado(id, 'abrir'); }
+    else if (a === 'dev') {
+      if (!(await dialog('Devolver al técnico', '<label>Motivo (el técnico lo verá y podrá corregir)</label><textarea id="nota" maxlength="200"></textarea>', 'Devolver'))) return;
+      await estado(id, 'dev', $('#nota').value); toast('Devuelto al técnico');
+    } else if (a === 'del') { if (!(await dialog('Eliminar registro', '<p>Se eliminará definitivamente.</p>', 'Eliminar'))) return; await api('/api/he/reg/' + id, { method: 'DELETE' }); toast('Eliminado'); }
+    await reload();
+  } catch (e) { toast(e.message, false); }
+}
+async function tabAut(pane) {
+  S.pend = await api('/api/he/reg?s=P');
+  const cnt = $('#tabs button[data-t="aut"]'); cnt.innerHTML = 'Por autorizar' + (S.pend.length ? `<span class="cnt">${S.pend.length}</span>` : '');
+  const names = [...new Set(S.pend.map((r) => r.un))].sort((a, b) => a.localeCompare(b, 'es'));
+  const list = S.pend.filter((r) => !S.filtroU || r.un === S.filtroU).sort((a, b) => (a.f < b.f ? -1 : a.f > b.f ? 1 : a.hi < b.hi ? -1 : 1));
+  pane.innerHTML = `<div class="card"><div class="bar"><h2 style="margin:0">Registros pendientes</h2><span class="sp"></span>
+    <select id="fu" style="width:auto"><option value="">Todos los técnicos</option>${names.map((n) => `<option${n === S.filtroU ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
+    <button class="g grn" id="autSel" ${list.length ? '' : 'disabled'}>Autorizar todos los mostrados (${list.length})</button></div>
+    <div id="lst">${list.length ? list.map((r) => itemHtml(r, true)).join('') : '<div class="empty">No hay registros pendientes. 🎉</div>'}</div></div>`;
+  $('#fu').onchange = () => { S.filtroU = $('#fu').value; tabAut(pane); };
+  $('#lst').onclick = (ev) => adminAction(ev, async () => { await adminRender(); });
+  $('#autSel').onclick = async () => {
+    if (!(await dialog('Autorizar', `<p>¿Autorizar ${list.length} registro(s)?</p>`, 'Autorizar'))) return;
+    try { const d = await api('/api/he/autorizar-lote', { method: 'POST', body: { ids: list.map((r) => r.id) } }); toast(d.n + ' registro(s) autorizado(s)'); await adminRender(); } catch (e) { toast(e.message, false); }
+  };
+}
+async function tabRes(pane) {
+  const d = S.res = await api(`/api/he/resumen?y=${S.y}&m=${S.m}`);
+  const T = { a: [0, 0, 0], p: [0, 0, 0], dev: 0, tarde: 0 };
+  d.colabs.forEach((c) => { for (let i = 0; i < 3; i++) { T.a[i] += c.a[i]; T.p[i] += c.p[i]; } T.dev += c.dev; T.tarde += c.tarde; });
+  const sm = (a) => a[0] + a[1] + a[2];
+  pane.innerHTML = `<div class="card"><div class="bar"><h2 style="margin:0">Resumen del período</h2><span class="sp"></span>${perSel()}<a class="g" style="text-decoration:none;padding:8px 12px;border:1px solid var(--bd);border-radius:8px;color:var(--azul)" href="/api/he/export.xlsx?y=${S.y}&m=${S.m}">Exportar Excel</a></div>
+    <div class="tiles"><div class="tile"><span>Horas autorizadas</span><b>${num(sm(T.a))} h</b><small>${num(T.a[0])} diurnas · ${num(T.a[1])} nocturnas · ${num(T.a[2])} dobles</small></div>
+    <div class="tile"><span>Pendientes de autorizar</span><b>${num(sm(T.p))} h</b><small>${num(T.p[0])} diurnas · ${num(T.p[1])} nocturnas · ${num(T.p[2])} dobles</small></div>
+    <div class="tile"><span>Fuera de plazo</span><b>${T.tarde}</b><small>registros reportados tarde</small></div></div>
+    <div class="scroll"><table><thead><tr><th>Colaborador</th><th class="num">Diurnas</th><th class="num">Nocturnas</th><th class="num">Dobles</th><th class="num">Total autorizado</th><th class="num">Pendientes</th><th class="num">Devueltos</th><th class="num">Fuera de plazo</th></tr></thead><tbody>
+    ${d.colabs.map((c) => `<tr><td>${esc(c.n)}</td><td class="num">${num(c.a[0])}</td><td class="num">${num(c.a[1])}</td><td class="num">${num(c.a[2])}</td><td class="num"><b>${num(sm(c.a))}</b></td><td class="num">${num(sm(c.p))}</td><td class="num">${c.dev}</td><td class="num">${c.tarde}</td></tr>`).join('') || '<tr><td colspan="8" class="empty">Sin colaboradores.</td></tr>'}
+    <tr class="tot"><td>TOTAL</td><td class="num">${num(T.a[0])}</td><td class="num">${num(T.a[1])}</td><td class="num">${num(T.a[2])}</td><td class="num">${num(sm(T.a))}</td><td class="num">${num(sm(T.p))}</td><td class="num">${T.dev}</td><td class="num">${T.tarde}</td></tr></tbody></table></div>
+    <h2 style="margin:16px 0 8px">Por tipo de observación</h2>
+    <div class="scroll"><table><thead><tr><th>Tipo</th><th class="num">Diurnas</th><th class="num">Nocturnas</th><th class="num">Dobles</th><th class="num">Total autorizado</th><th class="num">Pendientes</th></tr></thead><tbody>
+    ${d.tipos.map((t) => `<tr><td>${esc(t.t)}</td><td class="num">${num(t.a[0])}</td><td class="num">${num(t.a[1])}</td><td class="num">${num(t.a[2])}</td><td class="num"><b>${num(sm(t.a))}</b></td><td class="num">${num(sm(t.p))}</td></tr>`).join('') || '<tr><td colspan="6" class="empty">Sin registros en el período.</td></tr>'}</tbody></table></div>
+    ${repBoxA(d)}
+    <p style="font-size:12px;color:var(--mut)">Cada registro se asigna al período por su fecha de inicio. Los totales por colaborador solo suman horas autorizadas; los devueltos no cuentan. Las horas se expresan en horas decimales (4.5 = 4 h 30 min).</p></div>`;
+  bindPer(() => tabRes(pane));
+  if ($('#repA')) $('#repA').onclick = () => bajar(`/api/he/reporte.xlsx?y=${S.y}&m=${S.m}&u=${encodeURIComponent($('#repU').value)}`);
+}
+function repBoxA(d) {
+  const p = d.periodo, con = d.colabs.filter((c) => c.a[0] + c.a[1] + c.a[2] > 0), pn = d.colabs.reduce((a, c) => a + (c.pn || 0), 0);
+  let hint, warn = false;
+  if (!closed(p)) hint = `El reporte se habilita al cerrar el período, a partir del ${fdate(addDays(p.fin, 1))}.`;
+  else if (!con.length) hint = 'No hay horas autorizadas en este período.';
+  else { hint = 'Un archivo con una hoja del formato por colaborador (más hojas si pasa de 7 registros). Incluye solo horas autorizadas.'; if (pn) { hint += ` Hay ${pn} registro(s) pendiente(s) por autorizar que no aparecerán.`; warn = true; } }
+  return `<h2 style="margin:16px 0 8px">Reporte de horas extras (formato de Recursos Humanos)</h2>
+    <div class="row"><div class="f w"><label for="repU">Colaborador</label><select id="repU"><option value="todos">Todos los colaboradores</option>${con.map((c) => `<option value="${esc(c.u)}">${esc(c.n)}</option>`).join('')}</select></div>
+    <button class="b" id="repA" ${closed(p) && con.length ? '' : 'disabled'}>Descargar reporte (Excel)</button></div><div class="hint${warn ? ' w' : ''}" style="margin:6px 0 12px">${esc(hint)}</div>`;
+}
+async function tabCal(pane) {
+  const d = S.res = await api(`/api/he/resumen?y=${S.y}&m=${S.m}`);
+  const p = d.periodo, days = []; for (let x = p.ini; x <= p.fin; x = addDays(x, 1)) days.push(x);
+  const hol = new Set(d.feriados.map((f) => f.f));
+  const cell = (c, day) => {
+    const v = (d.dias[c.u] || {})[day]; if (!v) return '<td></td>';
+    const a = v.a, q = v.p, inc = S.cal.pend;
+    const t = [a[0] + (inc ? q[0] : 0), a[1] + (inc ? q[1] : 0), a[2] + (inc ? q[2] : 0)], tot = t[0] + t[1] + t[2];
+    if (!tot) return '<td></td>';
+    const col = t[2] > 0 ? 'var(--x)' : t[1] > 0 ? 'var(--n)' : 'var(--d)', onlyP = inc && !(a[0] + a[1] + a[2]);
+    return `<td class="c${onlyP ? ' p' : ''}" style="background:${col}${t[2] > 0 || t[1] > 0 ? ';color:#fff' : ''}" title="${esc(c.n)} · ${fdate(day)}: ${num(t[0])} diurnas, ${num(t[1])} nocturnas, ${num(t[2])} dobles${q[0] + q[1] + q[2] ? ' (incluye pendientes)' : ''}">${num(tot)}</td>`;
+  };
+  pane.innerHTML = `<div class="card"><div class="bar"><h2 style="margin:0">Calendario</h2><span class="sp"></span>${perSel()}
+    <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--tx)"><input type="checkbox" id="incp" style="width:auto" ${S.cal.pend ? 'checked' : ''}>Incluir pendientes</label></div>
+    <div class="leg"><span class="chip d"><i></i>Solo diurnas</span><span class="chip n"><i></i>Con nocturnas</span><span class="chip x"><i></i>Con dobles (domingo/feriado)</span><span>Los días en rojo son domingos o feriados. Cada cuadro muestra las horas del trabajo que inició ese día; las atenuadas están pendientes.</span></div>
+    <div class="scroll"><table class="cal"><thead><tr><th class="nm">Colaborador</th>${days.map((x) => `<th class="${dow(x) === 0 || hol.has(x) ? 'hol' : ''}" title="${fdate(x)}${hol.has(x) ? ' · ' + esc((d.feriados.find((f) => f.f === x) || {}).n) : ''}">${DL[dow(x)]}<br>${x.slice(8)}</th>`).join('')}<th>Total</th></tr></thead><tbody>
+    ${d.colabs.map((c) => { const tt = (d.dias[c.u] ? Object.values(d.dias[c.u]).reduce((s, v) => s + v.a[0] + v.a[1] + v.a[2] + (S.cal.pend ? v.p[0] + v.p[1] + v.p[2] : 0), 0) : 0); return `<tr><td class="nm">${esc(c.n)}</td>${days.map((x) => cell(c, x)).join('')}<td><b>${num(tt)}</b></td></tr>`; }).join('')}</tbody></table></div></div>`;
+  bindPer(() => tabCal(pane));
+  $('#incp').onchange = () => { S.cal.pend = $('#incp').checked; tabCal(pane); };
+}
+async function tabReg(pane) {
+  const p = periodOf(S.y, S.m);
+  const users = (S.res && S.res.colabs) || [];
+  S.regs = await api(`/api/he/reg?from=${p.ini}&to=${p.fin}${S.filtroS ? '&s=' + S.filtroS : ''}`);
+  const names = [...new Set(S.regs.map((r) => r.un))].sort((a, b) => a.localeCompare(b, 'es'));
+  const list = S.regs.filter((r) => !S.filtroU || r.un === S.filtroU);
+  pane.innerHTML = `<div class="card"><div class="bar"><h2 style="margin:0">Todos los registros</h2><span class="sp"></span>${perSel()}
+    <select id="fu" style="width:auto"><option value="">Todos los técnicos</option>${names.map((n) => `<option${n === S.filtroU ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
+    <select id="fs" style="width:auto"><option value="">Todos los estados</option>${Object.entries(ST).map(([k, v]) => `<option value="${k}"${k === S.filtroS ? ' selected' : ''}>${v}</option>`).join('')}</select></div>
+    <div id="lst">${list.length ? list.map((r) => itemHtml(r, true)).join('') : '<div class="empty">Sin registros en el período.</div>'}</div></div>`;
+  bindPer(() => tabReg(pane));
+  $('#fu').onchange = () => { S.filtroU = $('#fu').value; tabReg(pane); };
+  $('#fs').onchange = () => { S.filtroS = $('#fs').value; tabReg(pane); };
+  $('#lst').onclick = (ev) => adminAction(ev, () => tabReg(pane));
+}
+async function tabEmp(pane) {
+  const list = await api('/api/he/empleados');
+  pane.innerHTML = `<div class="card"><h2>Empleados</h2>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Código y departamento que se imprimen en el encabezado del reporte de horas extras de cada colaborador. Si los dejas vacíos, esos campos salen en blanco.</p>
+    <div class="scroll"><table><thead><tr><th>Colaborador</th><th>Usuario</th><th>Código</th><th>Departamento</th><th></th></tr></thead><tbody>
+    ${list.map((u) => `<tr data-id="${esc(u.id)}"><td>${esc(u.name)}${u.active ? '' : ' <span class="chip">Inactivo</span>'}</td><td>${esc(u.user)}</td><td><input class="cod" maxlength="30" value="${esc(u.cod)}" aria-label="Código de ${esc(u.name)}"></td><td><input class="dep" maxlength="60" value="${esc(u.dep)}" aria-label="Departamento de ${esc(u.name)}"></td><td><button class="g s grn">Guardar</button></td></tr>`).join('') || '<tr><td colspan="5" class="empty">No hay colaboradores.</td></tr>'}</tbody></table></div></div>`;
+  pane.querySelectorAll('tr[data-id] button').forEach((b) => {
+    b.onclick = async () => {
+      const tr = b.closest('tr');
+      try { await api('/api/he/empleados/' + tr.dataset.id, { method: 'PUT', body: { cod: tr.querySelector('.cod').value, dep: tr.querySelector('.dep').value } }); toast('Guardado'); } catch (e) { toast(e.message, false); }
+    };
+  });
+}
+function tabFer(pane) {
+  const extra = S.cfg.extra.slice(), all = S.cfg.feriados;
+  const draw = () => {
+    pane.innerHTML = `<div class="card"><h2>Feriados</h2>
+      <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Las horas trabajadas en domingos y feriados cuentan como dobles. Ya vienen cargados los feriados fijos y Semana Santa de 2026 a 2028. Agrega aquí los que falten (por ejemplo el Feriado Morazánico, que cambia cada año) y verifica los de arriba contra el calendario oficial. Un cambio solo afecta a los registros que aún no están autorizados.</p>
+      <div class="row"><div class="f"><label for="ff">Fecha</label><input type="date" id="ff"></div><div class="f w"><label for="fn">Nombre</label><input id="fn" maxlength="60" placeholder="Feriado Morazánico"></div><button class="b" id="fadd">Agregar</button></div>
+      <h2 style="margin:16px 0 8px">Agregados por el administrador</h2>
+      ${extra.length ? `<div class="scroll"><table><tbody>${extra.map((x, i) => `<tr><td>${fdate(x.f)}</td><td>${esc(x.n)}</td><td class="num"><button class="g s red" data-i="${i}">Quitar</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Ninguno todavía.</div>'}
+      <h2 style="margin:16px 0 8px">Todos los feriados vigentes</h2>
+      <div class="scroll" style="max-height:340px"><table><tbody>${all.map((x) => `<tr><td>${fdate(x.f)}</td><td>${esc(x.n)}</td></tr>`).join('')}</tbody></table></div></div>`;
+    $('#fadd').onclick = async () => {
+      const f = $('#ff').value; if (!f) return toast('Elige la fecha', false);
+      if (extra.some((x) => x.f === f)) return toast('Esa fecha ya está agregada', false);
+      extra.push({ f, n: $('#fn').value.trim() || 'Feriado' }); extra.sort((a, b) => (a.f < b.f ? -1 : 1)); await save();
+    };
+    pane.querySelectorAll('button[data-i]').forEach((b) => { b.onclick = async () => { extra.splice(+b.dataset.i, 1); await save(); }; });
+  };
+  const save = async () => {
+    try {
+      await api('/api/he/feriados', { method: 'PUT', body: { list: extra.map((x) => ({ f: x.f, n: x.n })) } });
+      S.cfg = await api('/api/he/config'); fmtHoliday.clear(); S.cfg.feriados.forEach((f) => fmtHoliday.set(f.f, f.n));
+      toast('Feriados actualizados'); tabFer(pane);
+    } catch (e) { toast(e.message, false); }
+  };
+  draw();
+}
+init();
+</script>
+</body>
+</html>

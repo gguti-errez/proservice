@@ -1,4 +1,4 @@
-# mttos.pbs · Plataforma de Mantenimientos (multicliente)
+# Plan de mttos PBS (multicliente)
 
 Seguimiento en tiempo real del plan de mantenimientos de impresoras, con logo y colores de PBS.
 Se ve desde cualquier dispositivo (computadora, tablet, celular) con solo abrir la dirección web.
@@ -17,6 +17,7 @@ Se ve desde cualquier dispositivo (computadora, tablet, celular) con solo abrir 
 - **Firma del cliente** al marcar un equipo como listo: se dibuja con dedo, lápiz táctil o mouse y es obligatoria; si el cliente no puede o no quiere firmar, se marca la casilla y se anota el motivo. Se guarda con fecha, hora y el usuario que registró, y se ve en *Ver detalle*.
 - **En espera de repuesto:** al poner un equipo en espera se registran horas de llegada y salida y la firma del cliente (o el motivo). En *Actualizar repuesto* esos datos son opcionales y solo se piden si hubo una nueva visita. Cada visita queda en *Ver detalle* y sus horas suman al tiempo del equipo en el Panel gerencial. Si el repuesto es un **suministro** (tóner, cilindro o cartucho de mantenimiento; se detecta por el texto y se puede corregir con la casilla), la tarjeta y la etiqueta se muestran en **amarillo**; las piezas siguen en rojo. Los cambios de repuesto y de observaciones quedan en el historial. El colaborador puede editar observaciones desde *Actualizar repuesto*, pero no el checklist ni los contadores.
 - **Perfil:** cada cuenta tiene el botón *Perfil* (reemplaza a "Mi clave") para personalizar cargo, teléfono, correo y color del avatar, y cambiar su contraseña. El nombre y el usuario los cambia un administrador.
+- **Plantilla de calendarización** (`public/plantilla-calendarizacion.xlsx`, también con enlace en *Importar inventario*): una hoja con parámetros (fecha de inicio, equipos por día, frecuencia), feriados de Honduras 2026-2028 editables y fechas calculadas por localidad (una localidad por día, lunes a sábado, sin domingos ni feriados), con avisos de series repetidas y localidades parecidas. Al importar se leen solo las columnas de la tabla.
 - **Calendario** mensual por cliente con realizados, pendientes, en espera de repuesto y próximos servicios; domingos y feriados sombreados.
 - **Importación de inventario** desde Excel (.xlsx) o CSV, con vista previa y plantilla descargable.
 - **Ver detalle** (administradores, colaboradores y cuentas de cliente): ventana de solo lectura con estado, fechas, quién registró y cuándo, contadores, checklist completo actividad por actividad, observaciones y evidencia.
@@ -24,6 +25,18 @@ Se ve desde cualquier dispositivo (computadora, tablet, celular) con solo abrir 
 - **Frecuencia configurable por cliente** (por defecto 6 meses), siempre evitando domingos y feriados.
 - Planes por ciclo (2026, 2027, 2027B…): "Nuevo plan" copia el plan en pantalla.
 - Todos los cambios aparecen al instante en todas las pantallas abiertas.
+
+## Control de horas extras (`he.js` + `public/horas-extras.html`)
+Página: `/horas-extras.html` (enlázala desde el menú del plan de mttos solo para colaboradores y administradores).
+- **Técnico (colaborador):** registra sus horas (fecha, inicio, fin, tipo de observación y detalle) y ve **únicamente las suyas**. Edita o elimina mientras estén *Pendientes* o *Devueltas*; un registro *Autorizado* solo lo reabre un administrador.
+- **Administrador:** ve todo, autoriza (uno por uno o en lote), devuelve con motivo, reabre, consulta el **resumen del período** (del 15 al 14), el **calendario** por colaborador y exporta a **Excel**. También agrega feriados.
+- **Cliente:** sin acceso (403).
+- **Reglas:** diurna 5:00 a. m.–7:00 p. m., el resto nocturna; domingos y feriados cuentan completos como dobles; si pasa de la medianoche se divide por día; máx. 16 h por registro; no se aceptan fechas futuras ni horarios que se crucen con otro registro del mismo técnico. Se marca *Fuera de plazo* cuando se reporta después del día siguiente al trabajo. Solo cuenta horas; no calcula valores monetarios.
+- **Privacidad:** todo se valida en el servidor (`he.js`). Un técnico solo recibe sus registros; pedir el registro de otro devuelve 404. Las colecciones `he_reg` y `he_fer` no se pueden leer por `/api/col` ni `/api/doc`. Las horas de un registro autorizado quedan congeladas al autorizar.
+- **Feriados:** vienen cargados los fijos y Semana Santa 2026–2028; los demás (por ejemplo el Feriado Morazánico) se agregan en la pestaña *Feriados*. También se leen las fechas de la colección `feriados` del calendario, si las trae.
+- **Reporte para Recursos Humanos (`he-form.js` + `he-form-tpl.js`):** al cerrar el período (a partir del día 15) el colaborador descarga el suyo y el administrador el de un colaborador o el de todos (una hoja por colaborador). Es el formato oficial `Formato_Horas_Extras_Limpio` (logo, columnas Mañana/Tarde/Noche, Diurnas/Nocturna/Dobles, horas de viaje, totales y firmas) y solo incluye horas **autorizadas**. Se entrega como `.xlsx`. Si hay más de 7 registros se agregan hojas idénticas con su propio total. El código y el departamento del encabezado se editan en la pestaña *Empleados*. Turnos: Mañana 5:00–12:00, Tarde 12:00–19:00, Noche 19:00–5:00. La plantilla va incrustada en `he-form-tpl.js` (no hay que subir el .xls).
+- **Horas de viaje:** campo opcional al registrar; se imprime en la columna "Horas de viaje" del reporte.
+- **Datos:** se guardan en las mismas tablas de Supabase (`mttos_docs`); no hay que cambiar nada en `supabase-setup.sql`.
 
 ## Primer arranque y cuentas
 1. Despliega sin definir ninguna contraseña. Al abrir la página por primera vez aparece **Configuración inicial**: ahí defines tú la contraseña de la cuenta **`admin`** (mínimo 8 caracteres). Hazlo apenas despliegues: quien abra la página primero podría crear esa cuenta. Para evitarlo, define la variable `SETUP_CODE` y la pantalla exigirá ese código.
@@ -61,6 +74,33 @@ Opcionalmente `DATA_DIR=./data` cambia la carpeta de datos.
 | `PORT` | Puerto | 3000 |
 | `DATA_DIR` | Carpeta donde se guardan datos y evidencias | `./data` |
 | `SESSION_MINUTES` | Minutos de sesión sin cambios | 60 |
+| `SUPABASE_URL` | Dirección del proyecto de Supabase (`https://xxxx.supabase.co`). Activa el almacenamiento persistente | — |
+| `SUPABASE_SERVICE_KEY` | Llave **secreta** de Supabase (`sb_secret_…`). Solo en variables de entorno; nunca en el repositorio ni en el navegador | — |
+| `SUPABASE_BUCKET` | Bucket de evidencias | evidencias |
+
+## Datos permanentes en Supabase + servidor siempre activo (Render gratis)
+En el plan gratuito de Render el disco se borra al reiniciar. Con Supabase los equipos, avances, bitácora, firmas, cuentas **y las evidencias PDF/JPG** se guardan fuera de Render, y el servidor de Render queda sin estado.
+
+### 1. Crear el proyecto en Supabase (una sola vez)
+1. Entra a supabase.com → *Start your project* → crea cuenta → **New project**. Nombre: `plan-mttos-pbs`. Define una contraseña de base de datos (guárdala) y elige la región más cercana (por ejemplo East US).
+2. Menú **SQL Editor** → *New query* → pega el contenido de `supabase-setup.sql` → **Run**. Crea la tabla `mttos_docs` (con RLS activado y sin políticas, por lo que nadie accede con llaves públicas) y el bucket privado `evidencias`.
+3. **Project Settings → API Keys**: copia la *Project URL* (`https://xxxx.supabase.co`) y crea/copia la **Secret key** (`sb_secret_…`). Esa llave da acceso total: no la compartas ni la pegues en chats o en GitHub.
+
+### 2. Conectar Render
+En Render → tu servicio → **Environment** → agrega `SUPABASE_URL` y `SUPABASE_SERVICE_KEY` (y `SETUP_CODE` si aún no lo tienes) → *Save, rebuild and deploy*. En el registro debe aparecer `Supabase: base vacía; se subirán los datos locales` la primera vez, y `Supabase: N registros cargados` en los siguientes arranques.
+
+### 3. Comprobar que funciona
+Inicia sesión como administrador → **Administración**: arriba debe decir *Almacenamiento: Supabase conectado*. Si dice *SIN Supabase* faltan las variables. Prueba real: registra un cambio, en Render pulsa *Manual Deploy → Restart*, e inicia sesión de nuevo: tus cuentas, avances y evidencias deben seguir ahí.
+- Si Supabase no responde, el servidor reintenta solo cada 10 segundos y no pierde los cambios mientras siga encendido. Si no puede leer Supabase al arrancar, **no inicia vacío**: se detiene para no sobrescribir datos.
+- Plan gratuito de Supabase: 500 MB de base de datos, 1 GB de archivos, y el proyecto se **pausa tras 1 semana sin actividad**. El ping de abajo también lo evita.
+
+### 4. Mantener Render despierto (cada 14 minutos)
+El archivo `.github/workflows/keepalive.yml` hace que GitHub llame a `/healthz` cada 14 minutos.
+1. Sube la carpeta `.github` completa al repositorio (en GitHub: *Add file → Upload files* no siempre acepta carpetas ocultas; si falla, usa *Add file → Create new file*, escribe `.github/workflows/keepalive.yml` como nombre y pega el contenido).
+2. Repositorio → **Settings → Secrets and variables → Actions → pestaña Variables → New repository variable**: nombre `APP_URL`, valor la dirección de tu servicio (`https://tu-servicio.onrender.com`).
+3. Pestaña **Actions** → *Mantener Render activo* → **Run workflow** para probarlo. Debe terminar en verde y mostrar `{"ok":true,...}`.
+- GitHub puede retrasar unos minutos las ejecuciones programadas y desactiva los flujos programados de repositorios sin actividad durante 60 días (entra a Actions y reactívalo). Respaldo opcional: crea un monitor gratuito en cron-job.org o UptimeRobot que llame a `https://tu-servicio.onrender.com/healthz` cada 5 a 14 minutos.
+- Comando manual: `curl -fsS https://tu-servicio.onrender.com/healthz`.
 
 ## Desplegar en un servidor
 **Lo esencial:** el servidor necesita un **disco persistente** en `DATA_DIR`. Si el hosting borra los archivos al reiniciar (planes gratuitos sin disco), se pierde el avance.
@@ -74,7 +114,7 @@ docker run -d --name mantenimientos --restart unless-stopped \
 ```
 
 ### Opción B: Render
-Sube esta carpeta a un repositorio de GitHub y crea un "Blueprint" con `render.yaml`. Define `SETUP_CODE` en el panel (opcional). El disco persistente exige plan de pago. Para una prueba gratuita crea un *Web Service* manual con *Instance Type* Free: sin disco, los datos se pierden al dormirse el servicio.
+Sube esta carpeta a un repositorio de GitHub y crea un "Blueprint" con `render.yaml`. Define `SETUP_CODE` en el panel (opcional). Con Supabase (ver sección anterior) puedes usar el plan Free sin perder datos. Sin Supabase el disco persistente exige plan de pago.
 
 ### Opción C: Railway / Fly.io
 Crea el servicio desde el repositorio, agrega un volumen montado en `/data`, define `DATA_DIR=/data` y, si quieres, `SETUP_CODE`.
@@ -113,4 +153,4 @@ Cada persona cambia la suya en "Mi clave". El master puede asignar una clave nue
 ## Notas técnicas
 - Un solo proceso: no lo escales a varias instancias (los datos están en un archivo JSON y el tiempo real es en memoria). Pensado para cientos de equipos y decenas de usuarios.
 - El inventario original de CORINSA 2026 (129 equipos) va en `seed-corinsa.json` y solo lo entrega el servidor a quien puede ver CORINSA. Los datos de despliegues anteriores siguen funcionando: se conservan como cliente CORINSA.
-- Archivos: `server.js` (servidor), `reports.js` (métricas y Excel del panel), `public/index.html` (página), `seed-corinsa.json`.
+- Archivos: `server.js` (servidor), `reports.js` (métricas y Excel del panel), `he.js` (horas extras), `public/index.html` (página), `public/horas-extras.html` (horas extras), `seed-corinsa.json`.
