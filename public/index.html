@@ -25,9 +25,10 @@ h1{font-size:clamp(18px,3vw,24px);margin:0;letter-spacing:-.01em;text-wrap:balan
 .live.ro:before{background:var(--late)}
 @keyframes pulse{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
 @media(prefers-reduced-motion:reduce){.live.on:before{animation:none}}
-.tabs{display:flex;gap:6px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
 .tab{font:600 14px var(--sans);padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
 .tab[aria-selected="true"]{background:var(--brand);color:var(--brandfg);border-color:var(--brand)}
+.hxl{font:600 14px var(--sans);padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;text-decoration:none;display:inline-block;line-height:1.2}.hxl:hover{border-color:var(--brand)}.hxl[hidden]{display:none}
 .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
 .filters label{display:flex;flex-direction:column;gap:4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);min-width:0;flex:1 1 140px}
 select,input[type=search],input[type=text]{font:14px var(--sans);padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);min-width:0;width:100%}
@@ -221,7 +222,7 @@ body.onpanel .filters,body.onpanel>.wrap>.hero,body.onpanel #npl,body.onpanel>.w
   <div class="t"><h1>Plan de Mantenimientos <span id="hcli"></span> <span id="yt"></span></h1><p class="sub" id="hsub">Mantenimiento preventivo de impresoras</p></div>
   <label class="yr" id="cliW">Cliente<select id="cliSel" aria-label="Cliente"></select></label><label class="yr">Plan<select id="yearSel"><option>—</option></select></label><button type="button" id="newyr">Nuevo plan</button><button type="button" id="adminb" hidden>Administración</button><span class="live" id="live">Conectando…</span><span class="who" id="whoami"></span><button type="button" id="printb">Imprimir resumen</button><button type="button" id="outb" hidden>Cerrar sesión</button>
  </header>
- <nav class="tabs" role="tablist"><button class="tab" role="tab" id="t-panel" data-tab="panel" aria-selected="false" hidden>Panel gerencial</button><button class="tab" role="tab" id="t-resumen" data-tab="resumen" aria-selected="true">Resumen</button><button class="tab" role="tab" id="t-registrar" data-tab="registrar" aria-selected="false">Registrar avance</button><button class="tab" role="tab" id="t-calendario" data-tab="calendario" aria-selected="false">Calendario</button></nav>
+ <nav class="tabs" role="tablist"><button class="tab" role="tab" id="t-panel" data-tab="panel" aria-selected="false" hidden>Panel gerencial</button><button class="tab" role="tab" id="t-resumen" data-tab="resumen" aria-selected="true">Resumen</button><button class="tab" role="tab" id="t-registrar" data-tab="registrar" aria-selected="false">Registrar avance</button><button class="tab" role="tab" id="t-calendario" data-tab="calendario" aria-selected="false">Calendario</button><a class="hxl" id="t-horas" href="/horas-extras.html" hidden>Horas extras</a></nav>
  <section class="panel" id="npl" hidden><h2>Este cliente aún no tiene inventario</h2><p>Importa su catálogo desde Excel o CSV para empezar a calendarizar los mantenimientos.</p><button type="button" class="go" id="npl-imp">Importar inventario</button> <button type="button" id="npl-add">Agregar equipo manualmente</button></section>
  <div class="filters">
   <label>Empresa<select id="fE"></select></label><label>Localidad<select id="fL"></select></label>
@@ -1022,7 +1023,7 @@ function profileForm(){
   try{await call('POST','/api/password',JSON.stringify({old:$('po').value,new:$('pn1').value}),{'Content-Type':'application/json'});closeModal();toast('Clave actualizada')}catch(e){$('pwe').textContent=e.message||'No se pudo cambiar la clave.'}}}
 function applyRole(){canWrite=ME.role!=='user';canDel=ME.role==='master';
  document.body.classList.toggle('ro',!canWrite);document.body.classList.toggle('nodel',!canDel);
- $('adminb').hidden=ME.role!=='master';$('t-registrar').textContent=canWrite?'Registrar avance':'Equipos';$('cliW').hidden=ME.role==='user'}
+ $('adminb').hidden=ME.role!=='master';$('t-horas').hidden=!(ME.role==='master'||ME.role==='colab');$('t-registrar').textContent=canWrite?'Registrar avance':'Equipos';$('cliW').hidden=ME.role==='user'}
 function start(){started=true;applyRole();
  DB={collection:c=>colRef(c),doc:docRef};
  ASSETS={upload:async blob=>call('POST','/api/upload?c='+encodeURIComponent(CLIENT),blob,{'Content-Type':blob.type||'application/octet-stream'})};
